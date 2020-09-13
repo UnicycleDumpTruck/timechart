@@ -1,5 +1,6 @@
 import csv
 import plotly.express as px
+from plotly.subplots import make_subplots
 import pandas as pd
 
 days = {
@@ -30,8 +31,9 @@ exhibits = {
 }
 
 tasks = {
-    "dps": "Disinfect, Prop Swap",
-    "wd": "Wipe Down While Open to Guests",
+    "dps": "Spray, Prop Swap",
+    "wd": "Wipe Down While Open",
+    "ps": "Prop Swap",
 }
 
 dates_for_days = {
@@ -57,54 +59,50 @@ with open("input.csv", "r") as input_file:
     reader = csv.DictReader(input_file)
     events = list(reader)
     for row in events:
+        row["Task"] = tasks[row["Task"]]
+        row["Time"] = f"{row['Task']}<br>{row['Start']} - {row['End']}"
         row["Start"] = formatDate(row["Day"], row["Start"])
         row["End"] = formatDate(row["Day"], row["End"])
-        row["Task"] = tasks[row["Task"]]
         row["exhibit1"] = exhibits.get(row["exhibit1"])
         row["exhibit2"] = exhibits.get(row["exhibit2"])
         if row["exhibit2"]:
-            row["Exhibits"] = " & ".join(row["exhibit1"], row["exhibit2"])
+            row["Exhibits"] = f"{row['exhibit1']} &<br>{row['exhibit2']}"
         else:
             row["Exhibits"] = row["exhibit1"]
-
 
 print(events)
 
 edf = pd.DataFrame(events)
 
-df = pd.DataFrame(
-    [
-        dict(
-            Task="DPS",
-            Start="2020-09-12 10:00:00",
-            Finish="2020-09-12 10:45:00",
-            Exhibit="HTT",
-        ),
-        dict(
-            Task="WD",
-            Start="2020-09-12 10:45:00",
-            Finish="2020-09-12 11:30:00",
-            Exhibit="HTT",
-        ),
-        dict(
-            Task="DPS",
-            Start="2020-09-12 11:30:00",
-            Finish="2020-09-12 12:15:00",
-            Exhibit="AT",
-        ),
-    ]
-)
 
-fig = px.timeline(
-    edf,
-    x_start="Start",
-    x_end="End",
-    y="Exhibits",
-    color="Task",
-)
-fig.update_yaxes(autorange="reversed")
+def plotSingleDay(ddf, day):
+    print(day)
+    df = ddf.loc[edf["Day"] == day]
+    if len(df):
+        print(df)
+        fig = px.timeline(
+            df,
+            x_start="Start",
+            x_end="End",
+            y="Exhibits",
+            color="Task",
+            text="Time",
+        )
+        fig.update_yaxes(autorange="reversed")
 
-fig.update_layout(title="Saturday Exhibit Cleaning", xaxis_tickformat="%H:%M")
-fig.update_xaxes(tick0=0.25)
-config = {"displayModeBar": True}
-fig.show(config=config)
+        fig.update_layout(
+            title=f"{days[day]} Exhibit Cleaning",
+            xaxis_tickformat="%H:%M",
+            font_color="blue",
+            font_size=10,
+            title_font_family="Times New Roman",
+            title_font_color="red",
+            legend_title_font_color="green",
+        )
+        fig.update_xaxes(tick0=0.25)
+        config = {"displayModeBar": True}
+        fig.show(config=config)
+
+
+for day in days.keys():
+    plotSingleDay(edf, day)
