@@ -68,11 +68,6 @@ with open("input.csv", "r") as input_file:
     reader = csv.DictReader(input_file)
     events = list(reader)
     for row in events:
-        row["Task"] = tasks[row["Task"]]
-        row[
-            "Time"
-        ] = f"{row['Task']}<br>{formatTime(row['Start'])} - {formatTime(row['End'])}"
-        row["StartDate"] = formatDate(row["Day"], row["Start"])
         row["EndDate"] = formatDate(row["Day"], row["End"])
         row["exhibit1"] = exhibits.get(row["exhibit1"])
         row["exhibit2"] = exhibits.get(row["exhibit2"])
@@ -80,6 +75,11 @@ with open("input.csv", "r") as input_file:
             row["Exhibits"] = f"{row['exhibit1']} &<br>{row['exhibit2']}"
         else:
             row["Exhibits"] = row["exhibit1"]
+        row["Task"] = tasks[row["Task"]]
+        row[
+            "Time"
+        ] = f"{row['Exhibits']}<br>{row['Task']}<br>{formatTime(row['Start'])} - {formatTime(row['End'])}"
+        row["StartDate"] = formatDate(row["Day"], row["Start"])
 
 all_events_df = pd.DataFrame(events)
 
@@ -104,7 +104,7 @@ def plotSingleDay(ddf, day):
             xaxis_tickformat="%-I:%M",
             font_color="blue",
             font_size=10,
-            title_font_family="Times New Roman",
+            title_font_family="Arial",
             title_font_color="red",
             legend_title_font_color="green",
         )
